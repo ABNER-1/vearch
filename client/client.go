@@ -994,7 +994,8 @@ func GetSource(doc *vearchpb.ResultItem, space *entity.Space, idIsLong bool, sor
 	return marshal, sortValues, pKey, nil
 }
 
-func MergeArrForField(dest []*vearchpb.SearchResult, src []*vearchpb.SearchResult, firstSortValue map[string][]sortorder.SortValue, so sortorder.SortOrder, size int32) error {
+func MergeArrForField(dest []*vearchpb.SearchResult, src []*vearchpb.SearchResult,
+	firstSortValue map[string][]sortorder.SortValue, so sortorder.SortOrder, size int32) error {
 
 	if len(dest) != len(src) {
 		log.Error("dest length:[%d] not equal src length:[%d]", len(dest), len(src))
@@ -1054,7 +1055,8 @@ func BulkMergeArrForField(dest []*vearchpb.SearchResult, src []*vearchpb.SearchR
 
 }
 
-func MergeForField(old *vearchpb.SearchResult, other *vearchpb.SearchResult, firstSortValue map[string][]sortorder.SortValue, sortOrder sortorder.SortOrder, from, size int32) (err error) {
+func MergeForField(old *vearchpb.SearchResult, other *vearchpb.SearchResult,
+	firstSortValue map[string][]sortorder.SortValue, sortOrder sortorder.SortOrder, from, size int32) (err error) {
 
 	old.Status = SearchStatusMerge(old.Status, other.Status)
 
@@ -1071,7 +1073,8 @@ func MergeForField(old *vearchpb.SearchResult, other *vearchpb.SearchResult, fir
 	old.Timeout = old.Timeout && other.Timeout
 
 	if len(old.ResultItems) > 0 || len(other.ResultItems) > 0 {
-		old.ResultItems = HitsMergeForField(old.ResultItems, firstSortValue, old.PID, other.PID, other.ResultItems, sortOrder, from, size)
+		old.ResultItems = HitsMergeForField(old.ResultItems, firstSortValue,
+			old.PID, other.PID, other.ResultItems, sortOrder, from, size)
 	}
 
 	if other.Explain != nil {
@@ -1097,7 +1100,9 @@ func SearchStatusMerge(old *vearchpb.SearchStatus, other *vearchpb.SearchStatus)
 	return old
 }
 
-func HitsMergeForField(dh []*vearchpb.ResultItem, firstSortValue map[string][]sortorder.SortValue, spid, fpid uint32, sh []*vearchpb.ResultItem, sortOrder sortorder.SortOrder, from, size int32) []*vearchpb.ResultItem {
+func HitsMergeForField(dh []*vearchpb.ResultItem, firstSortValue map[string][]sortorder.SortValue,
+	spid, fpid uint32, sh []*vearchpb.ResultItem, sortOrder sortorder.SortOrder,
+	from, size int32) []*vearchpb.ResultItem {
 
 	result := make([]*vearchpb.ResultItem, 0, int(math.Min(float64(len(sh)+len(dh)), float64(from+size))))
 
@@ -1120,8 +1125,8 @@ func HitsMergeForField(dh []*vearchpb.ResultItem, firstSortValue map[string][]so
 			d++
 			result = append(result, dd)
 		} else {
-			c = sortOrder.Compare(firstSortValue[dd.PKey], firstSortValue[sd.PKey])
-
+			//c = sortOrder.Compare(firstSortValue[dd.PKey], firstSortValue[sd.PKey])
+			c = int(dd.Score - sd.Score)
 			if c == 0 {
 				if spid > fpid { // if compare is same , so sort by partition id
 					c = -1
